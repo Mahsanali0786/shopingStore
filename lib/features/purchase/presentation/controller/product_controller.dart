@@ -19,40 +19,61 @@ class ProudctController extends GetxController {
   RxList<Product> favouritesProductList = <Product>[].obs;
   RxList<Product> products = <Product>[].obs;
 
+  RxList<Product> searchedFavProList = <Product>[].obs;
+  RxList<Product> searchedProList = <Product>[].obs;
+
   RxList listCategories = [].obs;
+  RxList searchedCategories = [].obs;
+
   RxInt totalProducts = 0.obs;
 
   Future<void> getProducts() async {
     final result = await getAllProduct();
+
     result.fold(
       (l) => Exception(l.getErrorMessage),
-      (r) => products.assignAll(r),
+      (r) {
+        products.assignAll(r);
+        totalProducts.value = products.length;
+      },
     );
-    totalProducts.value = products.value.length;
   }
 
-  Future<void> getSearchedProducts(String query) async {
+  Future<void> searchProducts(String query,
+      {required String categoryName}) async {
     List<Product> newProductList = <Product>[];
-    await getProducts();
 
-    for (Product product in products.value) {
-      if (product.category
-              .toLowerCase()
-              .trim()
-              .contains(query.toLowerCase().trim()) ||
-          product.title
-              .toLowerCase()
-              .trim()
-              .contains(query.toLowerCase().trim()) ||
-          product.brand
-              .toLowerCase()
-              .trim()
-              .contains(query.toLowerCase().trim())) {
-        newProductList.add(product);
-      }
+    if (categoryName.isEmpty) {
+      newProductList = products
+          .where((product) =>
+              product.category.toLowerCase().contains(query.toLowerCase()) ||
+              product.title.toLowerCase().contains(query.toLowerCase()) ||
+              product.brand.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    } else {
+      newProductList = products
+          .where((product) =>
+              product.category
+                  .toLowerCase()
+                  .contains(categoryName.toLowerCase()) &&
+              (product.title.toLowerCase().contains(query.toLowerCase()) ||
+                  product.brand.toLowerCase().contains(query.toLowerCase())))
+          .toList();
     }
-    products.assignAll(newProductList);
-    totalProducts.value = products.value.length;
+
+    searchedProList.assignAll(newProductList);
+    totalProducts.value = searchedProList.value.length;
+  }
+
+  Future<void> searchFavouriteProduct(String query) async {
+    List<Product> newProductList = favouritesProductList
+        .where((product) =>
+            product.category.toLowerCase().contains(query.toLowerCase()) ||
+            product.title.toLowerCase().contains(query.toLowerCase()) ||
+            product.brand.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+
+    searchedFavProList.assignAll(newProductList);
   }
 
   void addRemoveFromFavList(Product product) {
@@ -73,10 +94,17 @@ class ProudctController extends GetxController {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         listCategories.assignAll(json.decode(response.body));
-      } else {
       }
     } catch (e) {
-      throw const ApiException(message: 'Error while getting categories', statusCode: 500);
+      throw const ApiException(
+          message: 'Error while getting categories', statusCode: 500);
     }
+  }
+
+  Future<void> searchCategories(String query) async {
+    searchedCategories.assignAll(listCategories
+        .where(
+            (category) => category.toLowerCase().contains(query.toLowerCase()))
+        .toList());
   }
 }

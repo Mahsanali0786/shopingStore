@@ -52,10 +52,15 @@ class FavCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      product.title,
-                      style: const TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.bold),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width / 2.5,
+                      child: Text(
+                        product.title,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: const TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.bold),
+                      ),
                     ),
                     Text(
                       '\$${product.price}',

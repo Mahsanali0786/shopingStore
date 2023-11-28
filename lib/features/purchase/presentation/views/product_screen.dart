@@ -4,6 +4,7 @@ import 'package:mobilestore/features/purchase/data/datasources/prod_remote_datas
 import 'package:mobilestore/features/purchase/presentation/controller/product_controller.dart';
 import 'package:mobilestore/features/purchase/presentation/views/product_details.dart';
 import 'package:mobilestore/features/purchase/presentation/widgets/product_card.dart';
+import 'package:mobilestore/features/purchase/presentation/widgets/search_bar.dart';
 
 class ProductScreen extends StatefulWidget {
   ProductScreen({
@@ -22,6 +23,7 @@ class ProductScreen extends StatefulWidget {
 
 class _ProductScreenState extends State<ProductScreen> {
   late TextEditingController searchController;
+  bool isSearching = false;
 
   @override
   void initState() {
@@ -37,11 +39,15 @@ class _ProductScreenState extends State<ProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ProudctController proudctController = Get.find<ProudctController>();
+    ProudctController productController = Get.find<ProudctController>();
     if (widget.isCategory == true && widget.nameOfScreen != '') {
-      proudctController.getSearchedProducts(widget.nameOfScreen.toString());
+      productController.searchProducts(widget.nameOfScreen.toString(),
+          categoryName: '');
+      setState(() {
+        isSearching = true;
+      });
     } else {
-      proudctController.getProducts();
+      productController.getProducts();
     }
     return Scaffold(
       appBar: AppBar(
@@ -70,32 +76,28 @@ class _ProductScreenState extends State<ProductScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SearchBar(
-              controller: searchController,
-              hintText: 'search',
-              leading: const Icon(
-                Icons.search,
-                color: Colors.black,
-              ),
-              onSubmitted: (value) async {
-                proudctController.getSearchedProducts(value);
+            CustomSearchBar(
+              searchFieldController: searchController,
+              onChangeCallBack: (String query) {
+                setState(() {
+                  isSearching = true;
+                });
+                if (widget.isCategory) {
+                  productController.searchProducts(query,
+                      categoryName: widget.nameOfScreen);
+                } else {
+                  productController.searchProducts(query, categoryName: '');
+                }
               },
-              shape: MaterialStateProperty.all(ContinuousRectangleBorder(
-                  borderRadius: BorderRadius.circular(10))),
-              constraints: const BoxConstraints(minHeight: 45, maxHeight: 45),
-              side: MaterialStateProperty.all(
-                  const BorderSide(width: 1, color: Colors.black)),
-              backgroundColor: MaterialStateProperty.all(Colors.white),
-              textStyle: MaterialStateProperty.all(const TextStyle(
-                  color: Colors.black, fontWeight: FontWeight.bold)),
-              elevation: MaterialStateProperty.all(0),
             ),
             const SizedBox(
               height: 15,
             ),
             Obx(
               () => Text(
-                '${proudctController.totalProducts} results found',
+                isSearching
+                    ? '${productController.searchedProList.value.length.toString()} result found'
+                    : '${productController.products.value.length.toString()} result found',
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ),
@@ -105,14 +107,20 @@ class _ProductScreenState extends State<ProductScreen> {
             Expanded(
               child: Obx(
                 () => ListView.builder(
-                    itemCount: proudctController.products.length,
+                    itemCount: isSearching == false
+                        ? productController.products.length
+                        : productController.searchedProList.value.length,
                     itemBuilder: (context, index) {
                       return ProductCard(
-                        product: proudctController.products.value[index],
+                        product: isSearching == false
+                            ? productController.products.value[index]
+                            : productController.searchedProList.value[index],
                         onTapCallBack: () {
                           Get.to(ProductDetails(
-                              product:
-                                  proudctController.products.value[index]));
+                              product: isSearching == false
+                                  ? productController.products.value[index]
+                                  : productController
+                                      .searchedProList.value[index]));
                         },
                       );
                     }),

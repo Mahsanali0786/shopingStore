@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobilestore/features/purchase/presentation/controller/product_controller.dart';
 import 'package:mobilestore/features/purchase/presentation/views/product_screen.dart';
+import 'package:mobilestore/features/purchase/presentation/widgets/search_bar.dart';
 
 import '../../../../core/utils/constants.dart';
 
@@ -14,6 +15,7 @@ class CategoryScreen extends StatefulWidget {
 
 class _CategoryScreenState extends State<CategoryScreen> {
   late final TextEditingController categoryController;
+  bool isSearching = false;
 
   @override
   void initState() {
@@ -46,40 +48,34 @@ class _CategoryScreenState extends State<CategoryScreen> {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SearchBar(
-            controller: categoryController,
-            hintText: 'search',
-            leading: const Icon(
-              Icons.search,
-              color: Colors.black,
-            ),
-            onChanged: (value) async {},
-            shape: MaterialStateProperty.all(ContinuousRectangleBorder(
-                borderRadius: BorderRadius.circular(10))),
-            constraints: const BoxConstraints(minHeight: 45, maxHeight: 45),
-            side: MaterialStateProperty.all(
-                const BorderSide(width: 1, color: Colors.black)),
-            backgroundColor: MaterialStateProperty.all(Colors.white),
-            textStyle: MaterialStateProperty.all(const TextStyle(
-                color: Colors.black, fontWeight: FontWeight.bold)),
-            elevation: MaterialStateProperty.all(0),
-          ),
+          CustomSearchBar(
+              searchFieldController: categoryController,
+              onChangeCallBack: (String query) {
+                setState(() {
+                  isSearching = true;
+                });
+                proudctController.searchCategories(query);
+              }),
           const SizedBox(
             height: 20,
           ),
           Expanded(
             child: Obx(
               () => GridView.builder(
-                itemCount: proudctController.listCategories.value.length,
+                itemCount: isSearching
+                    ? proudctController.searchedCategories.value.length
+                    : proudctController.listCategories.value.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 20,
                     crossAxisSpacing: 20),
                 itemBuilder: (context, index) => GestureDetector(
                   onTap: () {
-                    String categoryName = proudctController
-                        .listCategories.value[index]
-                        .toString();
+                    String categoryName = isSearching
+                        ? proudctController.searchedCategories.value[index]
+                            .toString()
+                        : proudctController.listCategories.value[index]
+                            .toString();
                     Get.to(ProductScreen(
                       nameOfScreen: categoryName,
                       isCategory: true,
@@ -98,7 +94,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         ),
                         borderRadius: BorderRadius.circular(10)),
                     child: Text(
-                      proudctController.listCategories.value[index].toString(),
+                      isSearching
+                          ? proudctController.searchedCategories.value[index]
+                              .toString()
+                          : proudctController.listCategories.value[index]
+                              .toString(),
                       style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

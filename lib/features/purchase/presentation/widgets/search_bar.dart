@@ -1,39 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:mobilestore/core/utils/typedef.dart';
 
-class SearchBar extends StatelessWidget {
-   SearchBar({super.key});
+class CustomSearchBar extends StatelessWidget {
+  const CustomSearchBar({super.key, required this.searchFieldController, required this.onChangeCallBack});
 
-  TextEditingController searchFieldController = TextEditingController();
+  final TextEditingController searchFieldController;
+  final void Function(String) onChangeCallBack;
 
   @override
   Widget build(BuildContext context) {
     return Material(
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Container(
-          // Add padding around the search bar
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          // Use a Material design search bar
-          child: TextField(
-            controller: searchFieldController,
-            decoration: InputDecoration(
-              hintText: 'Search...',
-              // Add a clear button to the search bar
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () => searchFieldController.clear(),
-              ),
-              // Add a search icon or button to the search bar
-              prefixIcon: IconButton(
-                icon: const Icon(Icons.search),
-                onPressed: () {
-                  // Perform the search here
-                },
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20.0),
-              ),
+        padding: const EdgeInsets.all(0.0),
+        child: TextField(
+          controller: searchFieldController,
+          onChanged: onChangeCallBack,
+          decoration: InputDecoration(
+            isDense: true ,
+            hintText: 'Search...',
+            prefixIcon: IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: (){},
             ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10.0),
+              borderSide: const BorderSide(color: Colors.black,width: 1.5)
+            ),
+
           ),
         ),
       ),

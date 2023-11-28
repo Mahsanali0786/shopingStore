@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobilestore/features/purchase/presentation/controller/product_controller.dart';
 import 'package:mobilestore/features/purchase/presentation/widgets/fav_card.dart';
+import 'package:mobilestore/features/purchase/presentation/widgets/search_bar.dart';
 
 class FavouriteScreen extends StatefulWidget {
   FavouriteScreen({super.key, this.isLeading = false});
@@ -13,6 +14,7 @@ class FavouriteScreen extends StatefulWidget {
 
 class _FavouriteScreenState extends State<FavouriteScreen> {
   late TextEditingController favController;
+  bool isSearching = false;
 
   @override
   void initState() {
@@ -47,30 +49,22 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SearchBar(
-              controller: favController,
-              hintText: 'search',
-              leading: const Icon(
-                Icons.search,
-                color: Colors.black,
-              ),
-              onChanged: (value) async {},
-              shape: MaterialStateProperty.all(ContinuousRectangleBorder(
-                  borderRadius: BorderRadius.circular(10))),
-              constraints: const BoxConstraints(minHeight: 45, maxHeight: 45),
-              side: MaterialStateProperty.all(
-                  const BorderSide(width: 1, color: Colors.black)),
-              backgroundColor: MaterialStateProperty.all(Colors.white),
-              textStyle: MaterialStateProperty.all(const TextStyle(
-                  color: Colors.black, fontWeight: FontWeight.bold)),
-              elevation: MaterialStateProperty.all(0),
-            ),
+            CustomSearchBar(
+                searchFieldController: favController,
+                onChangeCallBack: (String query) {
+                  setState(() {
+                    isSearching = true;
+                  });
+                  proudctController.searchFavouriteProduct(query);
+                }),
             const SizedBox(
               height: 15,
             ),
             Obx(
               () => Text(
-                '${proudctController.favouritesIdList.length} results found',
+                isSearching
+                    ? '${proudctController.searchedFavProList.length} results found'
+                    : '${proudctController.favouritesIdList.length} results found',
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ),
@@ -78,27 +72,26 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
               height: 5,
             ),
             Expanded(
-              child: Obx(()=>ListView.builder(
-
-                      itemCount:
-                      proudctController.favouritesProductList.value.length,
-                      itemBuilder: (context, index) {
-                      final product = proudctController.favouritesProductList.value[index];
-                        return FavCard(
-                          product: product,
-                          onPressedCallBack: () {
-                            proudctController.addRemoveFromFavList(product);
-                          },
-                        );
-                      }),
-              )
-
-            ),
+                child: Obx(
+              () => ListView.builder(
+                  itemCount: isSearching
+                      ? proudctController.searchedFavProList.value.length
+                      : proudctController.favouritesProductList.value.length,
+                  itemBuilder: (context, index) {
+                    final product = isSearching
+                        ? proudctController.searchedFavProList.value[index]
+                        : proudctController.favouritesProductList.value[index];
+                    return FavCard(
+                      product: product,
+                      onPressedCallBack: () {
+                        proudctController.addRemoveFromFavList(product);
+                      },
+                    );
+                  }),
+            )),
           ],
         ),
       ),
     );
   }
 }
-
-

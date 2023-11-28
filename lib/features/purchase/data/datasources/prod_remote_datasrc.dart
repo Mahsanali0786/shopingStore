@@ -18,27 +18,31 @@ class ProdRemoteDataSrcImpl implements ProdRemoteDataSrc {
   final http.Client client;
   @override
   Future<List<ProductModel>> getAllProducts() async {
+    int limit = 100;
     try {
-      final response = await client.get(Uri.parse('$kBaseUrl$kProducts'));
+      final Uri uri =
+          Uri.parse('https://dummyjson.com/products?limit=${limit}');
+      final response = await client.get(uri);
       if (response.statusCode != 200 && response.statusCode != 201) {
         throw ApiException(
           message: 'Failed to Get User',
           statusCode: response.statusCode,
         );
-      }
-      final productData = jsonDecode(response.body);
-      List<ProductModel> productList = [];
-      if (productData != null && productData.containsKey('products')) {
-        List products = productData['products'];
-        for (var element in products) {
-          DataMap productMap = element as DataMap;
-          productList.add(ProductModel.fromMap(productMap));
-        }
       } else {
-        throw const ApiException(message: 'No data found', statusCode: 500);
-      }
+        final productData = jsonDecode(response.body);
+        List<ProductModel> productList = [];
+        if (productData != null && productData.containsKey('products')) {
+          List products = productData['products'];
+          for (var element in products) {
+            DataMap productMap = element as DataMap;
+            productList.add(ProductModel.fromMap(productMap));
+          }
+        } else {
+          throw const ApiException(message: 'No data found', statusCode: 500);
+        }
 
-      return productList;
+        return productList;
+      }
     } on ApiException {
       rethrow;
     } catch (e) {
