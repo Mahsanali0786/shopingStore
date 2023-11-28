@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:mobilestore/core/utils/typedef.dart';
 
 class CustomSearchBar extends StatelessWidget {
-  const CustomSearchBar({super.key, required this.searchFieldController, required this.onChangeCallBack});
+  const CustomSearchBar(
+      {super.key,
+      required this.searchFieldController,
+      required this.onChangeCallBack});
 
   final TextEditingController searchFieldController;
   final void Function(String) onChangeCallBack;
@@ -11,22 +14,22 @@ class CustomSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       child: Padding(
-        padding: const EdgeInsets.all(0.0),
+        padding: const EdgeInsets.all(1.0),
         child: TextField(
           controller: searchFieldController,
           onChanged: onChangeCallBack,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
           decoration: InputDecoration(
-            isDense: true ,
+            isDense: true,
             hintText: 'Search...',
-            prefixIcon: IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: (){},
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10.0),
-              borderSide: const BorderSide(color: Colors.black,width: 1.5)
-            ),
-
+            prefixIcon: const Icon(Icons.search, size: 20),
+            focusColor: Colors.black,
+            focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+                borderSide: const BorderSide(color: Colors.black, width: 1)),
+            enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+                borderSide: const BorderSide(color: Colors.black, width: 1)),
           ),
         ),
       ),
